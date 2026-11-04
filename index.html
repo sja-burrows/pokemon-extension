@@ -1,0 +1,112 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pokémon Sentence Builder</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fff0ad,#fff8dc 48%,#dceeff);min-height:100vh;color:#172a4c;font:16px system-ui,sans-serif}header{background:linear-gradient(110deg,#a80f23,#cc2637);color:white;padding:28px max(20px,calc((100% - 1060px)/2));border-bottom:6px solid #ffcb05}h1{font-size:clamp(26px,5vw,46px);margin:6px 0}header p{margin:8px 0;color:#fff4ee}.tag{font-size:13px;letter-spacing:.16em;font-weight:800;color:#ffdc7c}main{max-width:1100px;margin:auto;padding:18px 20px 48px}section{background:white;border:1px solid #e2dbf4;border-radius:18px;padding:18px;margin:14px 0}h2{font-size:18px;margin:0 0 10px}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}button{cursor:pointer;touch-action:manipulation;font:inherit;color:inherit;border:1px solid #d9d0ed;background:#f7f3ff;border-radius:11px;padding:9px 13px;min-height:44px}button[aria-pressed=true],.primary{background:#244b89;color:white;border-color:#244b89}button:focus-visible{outline:3px solid #b34d00;outline-offset:2px}button:disabled{opacity:.45;cursor:default}.tile{min-width:73px;background:#fff4cf;border-color:#e2c46a}.tile[aria-pressed=true]{background:#5236a0;border-color:#5236a0}.fixed{display:inline-flex;align-items:center;justify-content:center;background:#e9e1fa;padding:9px 12px;border-radius:9px;min-height:50px}.slot{border-style:dashed;background:#f6f0ff;font-weight:650;min-height:50px}ruby{font-size:1.22em}rt{font-size:.61em;letter-spacing:.025em}small{display:block;font-size:12px}.hint{color:#584c70;margin:8px 0 12px}.output{margin-top:13px;padding:10px;background:#eaf8f3;border-radius:9px}.line{line-height:2.3;overflow-wrap:anywhere}.entry{padding:8px 0;border-bottom:1px solid #eee}.entry:last-child{border:0}#bank{scroll-margin:12px}.bank-label{flex-basis:100%;font-size:13px;margin:8px 0 0;color:#584c70}
+.noun.tile,.noun.slot,.noun.key{background:#ffdfb6;border-color:#cc7b27;color:#422607}.adjective.tile,.adjective.slot,.adjective.key{background:#dceeff;border-color:#5b90c6;color:#173b61}.slot[aria-pressed=true],.tile[aria-pressed=true]{box-shadow:inset 0 0 0 2px currentColor}.key{border:1px solid;padding:4px 10px;border-radius:7px;font-size:13px;font-weight:700}.legend{margin-bottom:10px}.body-part.tile,.body-part.slot,.body-part.key{background:#fbd8e8;border-color:#bf658f;color:#56233d}
+.builder-grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;align-items:start}
+.sentence-panel,.word-panel{border-radius:14px;padding:16px}
+.sentence-panel{background:#fff9e4;border:2px solid #d4a313}
+.word-panel{background:#f0f6ff;border:1px solid #b9cde8}
+.builder-grid h3{margin:0 0 10px;font-size:16px}
+.builder-grid h3.bank-label{font-size:13px;margin:8px 0 0}
+#sentence{min-height:70px;padding:10px;background:white;border-radius:10px;align-content:center}
+#sentence .slot,#sentence .fixed{min-height:56px}
+#sentence .slot[aria-pressed=true]{outline:2px solid #244b89;outline-offset:2px}
+.sentence-panel>.row:last-child{margin-top:12px}
+@media(max-width:760px){.builder-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
+<header><div class="tag">YEAR 3 · JAPANESE EXTENSION</div><h1>Pokémon Sentence Builder</h1><p>Tap the tiles to describe a Pokémon in Japanese.</p></header>
+<main>
+<section><h2>1. Choose a sentence pattern</h2><div class="row" id="patterns"></div><p class="hint" id="tip"></p></section>
+<section><h2>2. Build your sentence</h2><div class="row legend" aria-label="Tile colours"><span class="noun key">Pokémon name</span><span class="body-part key">Body part</span><span class="adjective key">Adjective</span></div><div class="builder-grid"><div class="sentence-panel"><h3>Your Japanese sentence</h3><div class="row" id="sentence" aria-label="Sentence tiles"></div><div class="output" id="english" aria-live="polite" hidden></div><div class="row"><button id="translate" class="primary">Show English</button><button id="add">Add to description</button><button id="clear">Clear sentence</button><button id="romaji" aria-pressed="true">Romaji</button></div></div><div class="word-panel"><h3>Word bank</h3><p class="hint" id="prompt"></p><div class="row" id="bank"></div></div></div></section>
+<section><h2>3. My Pokémon description</h2><div id="paragraph"></div><p class="hint" id="empty">Build a sentence and tap “Add to description” to collect your sentences here.</p><div class="row"><button id="undo">Remove last sentence</button></div></section>
+</main>
+<script>
+const words = {
+ name:[['ピカチュウ','pikachuu','Pikachu'],['ヒトカゲ','hitokage','Charmander'],['ゼニガメ','zenigame','Squirtle'],['フシギダネ','fushigidane','Bulbasaur'],['My Pokémon’s Name','','[my Pokémon’s name]']],
+ part:[['あたま','atama','head'],['くち','kuchi','mouth'],['かた','kata','shoulders',1],['からだ','karada','body'],['ひざ','hiza','knees',1],['しっぽ','shippo','tail'],['あし','ashi','legs / feet',1],['ほっぺ','hoppe','cheeks',1],['め','me','eyes',1],['こうら','koura','shell'],['みみ','mimi','ears',1],['はね','hane','wings',1],['はな','hana','nose'],['つの','tsuno','horn']],
+ adj:[['おおきい','ookii','big'],['ちいさい','chiisai','small'],['かわいい','kawaii','cute'],['こわい','kowai','scary'],['かたい','katai','hard'],['ふわふわ','fuwafuwa','fluffy'],['つよい','tsuyoi','strong'],['よわい','yowai','weak'],['ながい','nagai','long'],['みじかい','mijikai','short'],['まるい','marui','round'],['ぷにぷに','punipuni','squishy']],
+ colour:[['あかい','akai','red'],['ちゃいろい','chairoi','brown'],['あおい','aoi','blue'],['みどり','midori','green'],['きいろい','kiiroi','yellow'],['むらさき','murasaki','purple'],['しろい','shiroi','white'],['オレンジ','orenji','orange'],['くろい','kuroi','black'],['ピンク','pinku','pink']]
+};
+words.noun=[...words.name,...words.part];
+const adjectiveCount=words.adj.length;
+words.adj=[...words.adj,...words.colour];
+words.join=words.adj.map(([ja,ro,en])=>ja.endsWith('い')
+ ? [ja.slice(0,-1)+'くて、',ro.slice(0,-1)+'kute',en]
+ : [ja+'で、',ro+' de',en]);
+const wa=['は','wa'], desu=['です。','desu'], mo=['も','mo'], no=['の','no'], to=['と','to'];
+const be=w=>w[3]?'are':'is';
+const subject=w=>(words.part.includes(w)?'its ':'')+w[2];
+const patterns=[
+ ['Introduce','Use これは to introduce your Pokémon. ',[['name','Pokémon'],desu],a=>'This is '+a[0][2]+'.'],
+ ['Describe','Use は to show what you are describing.',[['noun','Pokémon or body part'],wa,['adj','Adjective'],desu],a=>subject(a[0])+' '+be(a[0])+' '+a[1][2]+'.'],
+ ['Join adjectives','Drop the final い from the first adjective and add くて. For words like みどり and ふわふわ, add で. Try あかくて、きいろい or みどりで、まるい.',[['noun','Pokémon or body part'],wa,['join','First adjective'],['adj','Second adjective'],desu],a=>subject(a[0])+' '+be(a[0])+' '+a[1][2]+' and '+a[2][2]+'.'],
+ ['Use の','Use の between the Pokémon and its body part.',[['name','Pokémon'],no,['part','Body part'],wa,['adj','Adjective'],desu],a=>a[0][2]+'’s '+a[1][2]+' '+be(a[1])+' '+a[2][2]+'.'],
+ ['Use と','Use と to join two body parts.',[['part','First body part'],to,['part','Second body part'],wa,['adj','Adjective'],desu],a=>subject(a[0])+' and '+a[1][2]+' are '+a[2][2]+'.'],
+ ['Use も','Use も to say something is also a certain way.',[['noun','Pokémon or body part'],mo,['adj','Adjective'],desu],a=>subject(a[0])+' '+be(a[0])+' also '+a[1][2]+'.'],
+ ...[['そして、','soshite','And'],['でも、','demo','But']].map(([ja,ro,en])=>[ja.slice(0,-1),'Start a follow-up sentence with '+ja+' Think about how it connects to the previous one.',[[ja,ro],['noun','Pokémon or body part'],wa,['adj','Adjective'],desu],a=>en+' '+subject(a[0])+' '+be(a[0])+' '+a[1][2]+'.'])
+];
+const patternTiles=[
+ ['これは','kore wa','This is …'],
+ ['は','wa','Describe · is / are'],
+ ['～くて／～で','kute / de','Join adjectives · and'],
+ ['の','no','Possession · ’s'],
+ ['と','to','Join nouns · and'],
+ ['も','mo','Also / too'],
+ ['そして','soshite','And also'],
+ ['でも','demo','But']
+];
+patterns[0][2].unshift(['これは','kore wa']);
+const $=id=>document.getElementById(id);
+let mode=1, active=0, picks={}, show=false, roman=true, saved=[];
+const tileType=(group,word)=>['adj','join'].includes(group)?'adjective':group==='part'||words.part.includes(word)?'body-part':'noun';
+const jp=(w,gloss=false)=>w[1]===''?'<span>'+w[0]+'</span>':'<ruby lang="ja">'+w[0]+(roman?'<rt>'+w[1]+'</rt>':'')+'</ruby>'+(gloss?'<small>'+w[2]+'</small>':'');
+const button=(host,html,action,cls='',pressed)=>{const b=document.createElement('button');b.innerHTML=html;b.className=cls;if(pressed!==undefined)b.setAttribute('aria-pressed',pressed);b.onclick=action;host.append(b);return b};
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+function render(focus){
+ const [,tip,parts,translate]=patterns[mode];
+ for(const id of ['patterns','sentence','bank','paragraph']) $(id).replaceChildren();
+ patterns.forEach((_,i)=>button($('patterns'),jp(patternTiles[i],true),()=>{mode=i;active=patterns[i][2].findIndex(w=>words[w[0]]);picks={};show=false;render(['patterns',i])},'',i===mode));
+ $('tip').textContent=tip;
+ const slots=parts.map((w,i)=>words[w[0]]?i:-1).filter(i=>i>=0);
+ parts.forEach((w,i)=>{
+   if(words[w[0]]) button($('sentence'),picks[i]?jp(picks[i]):w[1],()=>{active=i;render(['bank',0])},'slot '+tileType(w[0],picks[i]),i===active).setAttribute('aria-label',w[1]+(picks[i]?' '+picks[i][0]:''));
+   else {const span=document.createElement('span');span.className='fixed';span.innerHTML=jp(w);$('sentence').append(span)}
+ });
+ const [group,label]=parts[active];
+ $('prompt').textContent='Choose a tile for '+label.toLowerCase()+'. Tap any sentence tile to change it.';
+ words[group].forEach((w,index)=>{
+   const heading = group==='part'&&index===0 ? 'Body parts'
+     : group==='noun' ? ({0:'Pokémon',[words.name.length]:'Body parts'})[index]
+     : ['adj','join'].includes(group) ? ({0:'Adjectives',[adjectiveCount]:'Colours'})[index] : null;
+   if(heading){
+     const label=document.createElement('h3');
+     label.className='bank-label';
+     label.textContent=heading;
+     $('bank').append(label);
+   }
+   const b=button($('bank'),jp(w,true),()=>{
+     picks[active]=w;
+     const next=slots.find(i=>i>active&&!picks[i])??slots.find(i=>!picks[i]);
+     if(next!==undefined)active=next;
+     render(next===undefined?['bank',index]:['bank',0]);
+   },'tile '+tileType(group,w),picks[active]===w);
+   if(mode===4&&slots.slice(0,2).some(i=>i!==active&&picks[i]===w)&&group==='part')b.disabled=true;
+ });
+ const complete=slots.every(i=>picks[i]);
+ const en=complete?cap(translate(slots.map(i=>picks[i]))):'';
+ $('english').hidden=!show||!complete;$('english').textContent=en;
+ $('translate').disabled=$('add').disabled=!complete;
+ $('translate').textContent=show?'Hide English':'Show English';
+ $('translate').onclick=()=>{show=!show;render()};
+ $('add').onclick=()=>{saved.push(parts.map((w,i)=>picks[i]??w));render()};
+ $('clear').onclick=()=>{picks={};active=slots[0];show=false;render()};
+ $('romaji').setAttribute('aria-pressed',roman);
+ $('romaji').onclick=()=>{roman=!roman;render()};
+ $('empty').hidden=saved.length>0;
+ $('undo').disabled=!saved.length;
+ $('undo').onclick=()=>{saved.pop();render()};
+ saved.forEach(line=>{const div=document.createElement('div');div.className='entry line';div.innerHTML=line.map(w=>jp(w)).join(' ');$('paragraph').append(div)});
+ if(focus) [...$(focus[0]).querySelectorAll('button')].slice(focus[1]).find(el=>!el.disabled)?.focus({preventScroll:true});
+}
+render();
+</script></html>
