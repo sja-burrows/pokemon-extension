@@ -1,4 +1,5 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pokémon Sentence Builder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&amp;display=swap">
 <style>
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fff0ad,#fff8dc 48%,#dceeff);min-height:100vh;color:#172a4c;font:16px system-ui,sans-serif}header{background:linear-gradient(110deg,#a80f23,#cc2637);color:white;padding:28px max(20px,calc((100% - 1060px)/2));border-bottom:6px solid #ffcb05}h1{font-size:clamp(26px,5vw,46px);margin:6px 0}header p{margin:8px 0;color:#fff4ee}.tag{font-size:13px;letter-spacing:.16em;font-weight:800;color:#ffdc7c}main{max-width:1100px;margin:auto;padding:18px 20px 48px}section{background:white;border:1px solid #e2dbf4;border-radius:18px;padding:18px;margin:14px 0}h2{font-size:18px;margin:0 0 10px}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}button{cursor:pointer;touch-action:manipulation;font:inherit;color:inherit;border:1px solid #d9d0ed;background:#f7f3ff;border-radius:11px;padding:9px 13px;min-height:44px}button[aria-pressed=true],.primary{background:#244b89;color:white;border-color:#244b89}button:focus-visible{outline:3px solid #b34d00;outline-offset:2px}button:disabled{opacity:.45;cursor:default}.tile{min-width:73px;background:#fff4cf;border-color:#e2c46a}.tile[aria-pressed=true]{background:#5236a0;border-color:#5236a0}.fixed{display:inline-flex;align-items:center;justify-content:center;background:#e9e1fa;padding:9px 12px;border-radius:9px;min-height:50px}.slot{border-style:dashed;background:#f6f0ff;font-weight:650;min-height:50px}ruby{font-size:1.22em}rt{font-size:.61em;letter-spacing:.025em}small{display:block;font-size:12px}.hint{color:#584c70;margin:8px 0 12px}.output{margin-top:13px;padding:10px;background:#eaf8f3;border-radius:9px}.line{line-height:2.3;overflow-wrap:anywhere}.entry{padding:8px 0;border-bottom:1px solid #eee}.entry:last-child{border:0}#bank{scroll-margin:12px}.bank-label{flex-basis:100%;font-size:13px;margin:8px 0 0;color:#584c70}
 .noun.tile,.noun.slot,.noun.key{background:#ffdfb6;border-color:#cc7b27;color:#422607}.adjective.tile,.adjective.slot,.adjective.key{background:#dceeff;border-color:#5b90c6;color:#173b61}.slot[aria-pressed=true],.tile[aria-pressed=true]{box-shadow:inset 0 0 0 2px currentColor}.key{border:1px solid;padding:4px 10px;border-radius:7px;font-size:13px;font-weight:700}.legend{margin-bottom:10px}.body-part.tile,.body-part.slot,.body-part.key{background:#fbd8e8;border-color:#bf658f;color:#56233d}
@@ -12,14 +13,36 @@
 #sentence .slot,#sentence .fixed{min-height:56px}
 #sentence .slot[aria-pressed=true]{outline:2px solid #244b89;outline-offset:2px}
 .sentence-panel>.row:last-child{margin-top:12px}
-@media(max-width:760px){.builder-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:820px){.builder-grid{grid-template-columns:minmax(0,1fr)}}
+#pokemonName{display:block;margin-top:6px;padding:9px 12px;min-height:44px;width:min(100%,24rem);border:1px solid #cc7b27;border-radius:9px;background:#fff8ef;font:inherit;color:inherit}.tile,.slot{overflow-wrap:anywhere;max-width:100%}
+#bank{max-height:min(42vh,360px);overflow:auto;align-content:start;padding:3px 6px 6px 3px}
+#bank .tile{min-width:60px;padding:5px 8px}
+#patterns button{padding:5px 9px}
+dialog{max-width:min(90vw,420px);border:2px solid #244b89;border-radius:14px;padding:18px;color:inherit}
+dialog::backdrop{background:#172a4c88}
+@media(max-width:820px){
+ main{padding:10px 12px 30px} section{padding:12px;margin:10px 0}
+ .sentence-panel,.word-panel{padding:10px}
+ #bank{max-height:220px}
+}
+ruby[lang="ja"],#pokemonName,.custom-name{font-family:"Klee One","UD Digi Kyokasho N-R",sans-serif}
+rt{font-family:system-ui,sans-serif}
+#duplicateWarning:not(:empty){margin-top:8px;padding:8px 12px;border-radius:8px;background:#fff0ad;color:#653a00;font-weight:600}
 </style>
 <header><div class="tag">YEAR 3 · JAPANESE EXTENSION</div><h1>Pokémon Sentence Builder</h1><p>Tap the tiles to describe a Pokémon in Japanese.</p></header>
 <main>
-<section><h2>1. Choose a sentence pattern</h2><div class="row" id="patterns"></div><p class="hint" id="tip"></p></section>
-<section><h2>2. Build your sentence</h2><div class="row legend" aria-label="Tile colours"><span class="noun key">Pokémon name</span><span class="body-part key">Body part</span><span class="adjective key">Adjective</span></div><div class="builder-grid"><div class="sentence-panel"><h3>Your Japanese sentence</h3><div class="row" id="sentence" aria-label="Sentence tiles"></div><div class="output" id="english" aria-live="polite" hidden></div><div class="row"><button id="translate" class="primary">Show English</button><button id="add">Add to description</button><button id="clear">Clear sentence</button><button id="romaji" aria-pressed="true">Romaji</button></div></div><div class="word-panel"><h3>Word bank</h3><p class="hint" id="prompt"></p><div class="row" id="bank"></div></div></div></section>
-<section><h2>3. My Pokémon description</h2><div id="paragraph"></div><p class="hint" id="empty">Build a sentence and tap “Add to description” to collect your sentences here.</p><div class="row"><button id="undo">Remove last sentence</button></div></section>
+<section><h2>1. Name your Pokémon</h2>
+<label for="pokemonName">Your Pokémon’s name</label>
+<input id="pokemonName" type="text" maxlength="40" placeholder="e.g. モコモン, Mokomon" autocomplete="off" aria-describedby="nameHelp">
+<p class="hint" id="nameHelp">Type a name to make your own orange tile, or choose a Pokémon from the word bank.</p></section>
+<section><h2>2. Choose a sentence pattern</h2><div class="row" id="patterns"></div><p class="hint" id="tip"></p></section>
+<section><h2>3. Build your sentence</h2><div class="row legend" aria-label="Tile colours"><span class="noun key">Pokémon name</span><span class="body-part key">Body part</span><span class="adjective key">Adjective</span></div><div class="builder-grid"><div class="sentence-panel"><h3>Your Japanese sentence</h3><div class="row" id="sentence" aria-label="Sentence tiles"></div><div class="output" id="english" aria-live="polite" hidden></div><div class="row"><button id="translate" class="primary">Show English</button><button id="add">Add to description</button><button id="clear">Clear sentence</button><button id="romaji" aria-pressed="true">Romaji</button></div><div id="duplicateWarning" role="status" aria-live="polite"></div></div><div class="word-panel"><h3>Word bank</h3><p class="hint" id="prompt"></p><div class="row" id="bank"></div></div></div></section>
+<section><h2>4. My Pokémon description</h2><div class="row"><button id="descriptionRomaji" aria-pressed="true" aria-controls="paragraph">Romaji</button><button id="descriptionEnglish" aria-pressed="false" aria-controls="paragraph">English translation</button></div><div id="paragraph"></div><p class="hint" id="empty">Build a sentence and tap “Add to description” to collect your sentences here.</p><div class="row"><button id="undo">Remove last sentence</button></div></section>
 </main>
+<dialog id="confirmChange" aria-labelledby="confirmMessage">
+  <p id="confirmMessage"></p>
+  <div class="row"><button type="button" id="keepSentence" autofocus>Keep it</button><button type="button" id="confirmAction"></button></div>
+</dialog>
 <script>
 const words = {
  name:[['ピカチュウ','pikachuu','Pikachu'],['ヒトカゲ','hitokage','Charmander'],['ゼニガメ','zenigame','Squirtle'],['フシギダネ','fushigidane','Bulbasaur'],['My Pokémon’s Name','','[my Pokémon’s name]']],
@@ -27,6 +50,7 @@ const words = {
  adj:[['おおきい','ookii','big'],['ちいさい','chiisai','small'],['かわいい','kawaii','cute'],['こわい','kowai','scary'],['かたい','katai','hard'],['ふわふわ','fuwafuwa','fluffy'],['つよい','tsuyoi','strong'],['よわい','yowai','weak'],['ながい','nagai','long'],['みじかい','mijikai','short'],['まるい','marui','round'],['ぷにぷに','punipuni','squishy']],
  colour:[['あかい','akai','red'],['ちゃいろい','chairoi','brown'],['あおい','aoi','blue'],['みどり','midori','green'],['きいろい','kiiroi','yellow'],['むらさき','murasaki','purple'],['しろい','shiroi','white'],['オレンジ','orenji','orange'],['くろい','kuroi','black'],['ピンク','pinku','pink']]
 };
+const customName=words.name.at(-1);
 words.noun=[...words.name,...words.part];
 const adjectiveCount=words.adj.length;
 words.adj=[...words.adj,...words.colour];
@@ -57,15 +81,34 @@ const patternTiles=[
 ];
 patterns[0][2].unshift(['これは','kore wa']);
 const $=id=>document.getElementById(id);
-let mode=1, active=0, picks={}, show=false, roman=true, saved=[];
+let mode=1, active=0, picks={}, show=false, roman=true, saved=[], draftEdited=false, descriptionRomaji=true, descriptionEnglish=false;
+$('pokemonName').addEventListener('input',event=>{
+ const name=event.target.value.trim();
+ customName[0]=name||'My Pokémon’s Name';
+ customName[2]=name||'[my Pokémon’s name]';
+ render();
+});
+const escapeHtml=value=>value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 const tileType=(group,word)=>['adj','join'].includes(group)?'adjective':group==='part'||words.part.includes(word)?'body-part':'noun';
-const jp=(w,gloss=false)=>w[1]===''?'<span>'+w[0]+'</span>':'<ruby lang="ja">'+w[0]+(roman?'<rt>'+w[1]+'</rt>':'')+'</ruby>'+(gloss?'<small>'+w[2]+'</small>':'');
+const jp=(w,gloss=false,showRomaji=roman)=>w[1]===''?'<span class="custom-name">'+escapeHtml(w[0])+'</span>':'<ruby lang="ja">'+w[0]+(showRomaji?'<rt>'+w[1]+'</rt>':'')+'</ruby>'+(gloss?'<small>'+w[2]+'</small>':'');
 const button=(host,html,action,cls='',pressed)=>{const b=document.createElement('button');b.innerHTML=html;b.className=cls;if(pressed!==undefined)b.setAttribute('aria-pressed',pressed);b.onclick=action;host.append(b);return b};
 const cap=s=>s[0].toUpperCase()+s.slice(1);
+function confirmChange(message,label,action){
+ const dialog=$('confirmChange');
+ $('confirmMessage').textContent=message;
+ $('confirmAction').textContent=label;
+ $('keepSentence').onclick=()=>dialog.close();
+ $('confirmAction').onclick=()=>{
+   dialog.close();
+   action();
+ };
+ dialog.showModal();
+}
+let previousGroup;
 function render(focus){
  const [,tip,parts,translate]=patterns[mode];
  for(const id of ['patterns','sentence','bank','paragraph']) $(id).replaceChildren();
- patterns.forEach((_,i)=>button($('patterns'),jp(patternTiles[i],true),()=>{mode=i;active=patterns[i][2].findIndex(w=>words[w[0]]);picks={};show=false;render(['patterns',i])},'',i===mode));
+ patterns.forEach((_,i)=>button($('patterns'),jp(patternTiles[i],true),()=>{if(i===mode)return;const change=()=>{draftEdited=false;mode=i;active=patterns[i][2].findIndex(w=>words[w[0]]);picks={};show=false;render(['patterns',i])};if(draftEdited)confirmChange('Change patterns and discard the sentence you’re building?','Change pattern',change);else change()},'',i===mode));
  $('tip').textContent=tip;
  const slots=parts.map((w,i)=>words[w[0]]?i:-1).filter(i=>i>=0);
  parts.forEach((w,i)=>{
@@ -73,6 +116,7 @@ function render(focus){
    else {const span=document.createElement('span');span.className='fixed';span.innerHTML=jp(w);$('sentence').append(span)}
  });
  const [group,label]=parts[active];
+ if(group!==previousGroup){$('bank').scrollTop=0;previousGroup=group}
  $('prompt').textContent='Choose a tile for '+label.toLowerCase()+'. Tap any sentence tile to change it.';
  words[group].forEach((w,index)=>{
    const heading = group==='part'&&index===0 ? 'Body parts'
@@ -86,6 +130,7 @@ function render(focus){
    }
    const b=button($('bank'),jp(w,true),()=>{
      picks[active]=w;
+     draftEdited=true;
      const next=slots.find(i=>i>active&&!picks[i])??slots.find(i=>!picks[i]);
      if(next!==undefined)active=next;
      render(next===undefined?['bank',index]:['bank',0]);
@@ -98,14 +143,41 @@ function render(focus){
  $('translate').disabled=$('add').disabled=!complete;
  $('translate').textContent=show?'Hide English':'Show English';
  $('translate').onclick=()=>{show=!show;render()};
- $('add').onclick=()=>{saved.push(parts.map((w,i)=>picks[i]??w));render()};
- $('clear').onclick=()=>{picks={};active=slots[0];show=false;render()};
+ $('duplicateWarning').textContent='';
+ $('add').onclick=()=>{
+   if(!complete)return;
+   const line=parts.map((w,i)=>picks[i]??w);
+   const sentenceText=line.map(word=>word[0]).join('');
+   if(saved.some(entry=>entry.line.map(word=>word[0]).join('')===sentenceText)){
+     $('duplicateWarning').textContent='This sentence is already in your description.';
+     return;
+   }
+   saved.push({line,translate,chosen:slots.map(i=>picks[i])});
+   draftEdited=false;
+   render();
+ };
+ $('clear').onclick=()=>{if(Object.keys(picks).length)confirmChange('Clear the sentence you’re building?','Clear sentence',()=>{draftEdited=false;picks={};active=slots[0];show=false;render()})};
  $('romaji').setAttribute('aria-pressed',roman);
  $('romaji').onclick=()=>{roman=!roman;render()};
  $('empty').hidden=saved.length>0;
  $('undo').disabled=!saved.length;
- $('undo').onclick=()=>{saved.pop();render()};
- saved.forEach(line=>{const div=document.createElement('div');div.className='entry line';div.innerHTML=line.map(w=>jp(w)).join(' ');$('paragraph').append(div)});
+ $('undo').onclick=()=>{if(saved.length)confirmChange('Remove the last sentence from your description?','Remove sentence',()=>{saved.pop();render();if(!saved.length)$('add').focus()})};
+ $('descriptionRomaji').setAttribute('aria-pressed',descriptionRomaji);
+ $('descriptionEnglish').setAttribute('aria-pressed',descriptionEnglish);
+ $('descriptionRomaji').onclick=()=>{descriptionRomaji=!descriptionRomaji;render()};
+ $('descriptionEnglish').onclick=()=>{descriptionEnglish=!descriptionEnglish;render()};
+ saved.forEach(({line,translate,chosen})=>{
+   const div=document.createElement('div');
+   div.className='entry line';
+   div.innerHTML=line.map(w=>jp(w,false,descriptionRomaji)).join(' ');
+   if(descriptionEnglish){
+     const english=document.createElement('div');
+     english.className='output';
+     english.textContent=cap(translate(chosen));
+     div.append(english);
+   }
+   $('paragraph').append(div);
+ });
  if(focus) [...$(focus[0]).querySelectorAll('button')].slice(focus[1]).find(el=>!el.disabled)?.focus({preventScroll:true});
 }
 render();
