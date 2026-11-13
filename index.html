@@ -28,6 +28,18 @@ dialog::backdrop{background:#172a4c88}
 ruby[lang="ja"],#pokemonName,.custom-name{font-family:"Klee One","UD Digi Kyokasho N-R",sans-serif}
 rt{font-family:system-ui,sans-serif}
 #duplicateWarning:not(:empty){margin-top:8px;padding:8px 12px;border-radius:8px;background:#fff0ad;color:#653a00;font-weight:600}
+
+/* Visual grammar support for joining い-adjectives */
+#joiningGuide{margin:12px 0 16px;padding:14px;border:2px solid #93b9e3;border-radius:14px;background:#f1f8ff}
+#joiningGuide h3{margin:0 0 6px;font-size:17px}
+.join-steps{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+.join-chip{display:inline-flex;align-items:center;gap:2px;padding:9px 12px;border:2px solid #5b90c6;border-radius:11px;background:#dceeff;font-family:"Klee One",sans-serif;font-size:23px;font-weight:600}
+.join-remove{text-decoration:line-through;text-decoration-color:#c52d45;text-decoration-thickness:3px;color:#a6293e}
+.join-add{background:#d8f4df;border-radius:6px;padding:1px 5px;color:#12602e}
+.join-arrow{font-size:22px;font-weight:800;color:#244b89}
+.join-step-label{font-size:13px;font-weight:650;color:#344d70}
+#joiningGuide .hint{margin:7px 0 0}
+@media(max-width:480px){.join-chip{font-size:20px;padding:7px 9px}.join-steps{gap:5px}}
 </style>
 <header><div class="tag">YEAR 3 · JAPANESE EXTENSION</div><h1>Pokémon Sentence Builder</h1><p>Tap the tiles to describe a Pokémon in Japanese.</p></header>
 <main>
@@ -36,7 +48,20 @@ rt{font-family:system-ui,sans-serif}
 <input id="pokemonName" type="text" maxlength="40" placeholder="e.g. モコモン, Mokomon" autocomplete="off" aria-describedby="nameHelp">
 <p class="hint" id="nameHelp">Type a name to make your own orange tile, or choose a Pokémon from the word bank.</p></section>
 <section><h2>2. Choose a sentence pattern</h2><div class="row" id="patterns"></div><p class="hint" id="tip"></p></section>
-<section><h2>3. Build your sentence</h2><div class="row legend" aria-label="Tile colours"><span class="noun key">Pokémon name</span><span class="body-part key">Body part</span><span class="adjective key">Adjective</span></div><div class="builder-grid"><div class="sentence-panel"><h3>Your Japanese sentence</h3><div class="row" id="sentence" aria-label="Sentence tiles"></div><div class="output" id="english" aria-live="polite" hidden></div><div class="row"><button id="translate" class="primary">Show English</button><button id="add">Add to description</button><button id="clear">Clear sentence</button><button id="romaji" aria-pressed="true">Romaji</button></div><div id="duplicateWarning" role="status" aria-live="polite"></div></div><div class="word-panel"><h3>Word bank</h3><p class="hint" id="prompt"></p><div class="row" id="bank"></div></div></div></section>
+<section><h2>3. Build your sentence</h2>
+<div id="joiningGuide" hidden aria-label="How to join Japanese adjectives">
+<h3>How to join い-adjectives</h3>
+<p class="hint">To say <strong>red and big</strong>, change the first adjective:</p>
+<div class="join-steps" aria-label="あかい becomes あかくて">
+<div><div class="join-step-label">1. Start with</div><div class="join-chip">あか<span class="join-remove">い</span></div></div>
+<span class="join-arrow" aria-hidden="true">→</span>
+<div><div class="join-step-label">2. Remove い</div><div class="join-chip">あか</div></div>
+<span class="join-arrow" aria-hidden="true">→</span>
+<div><div class="join-step-label">3. Add くて</div><div class="join-chip">あか<span class="join-add">くて</span>、</div></div>
+</div>
+<p><strong>あかい → あかくて、 おおきいです。</strong> <span class="hint">(It is red and big.)</span></p>
+<p class="hint">This rule is for い-adjectives. For words such as みどり and ふわふわ, add <strong>で</strong> instead: みどりで、まるいです。</p>
+</div><div class="row legend" aria-label="Tile colours"><span class="noun key">Pokémon name</span><span class="body-part key">Body part</span><span class="adjective key">Adjective</span></div><div class="builder-grid"><div class="sentence-panel"><h3>Your Japanese sentence</h3><div class="row" id="sentence" aria-label="Sentence tiles"></div><div class="output" id="english" aria-live="polite" hidden></div><div class="row"><button id="translate" class="primary">Show English</button><button id="add">Add to description</button><button id="clear">Clear sentence</button><button id="romaji" aria-pressed="true">Romaji</button></div><div id="duplicateWarning" role="status" aria-live="polite"></div></div><div class="word-panel"><h3>Word bank</h3><p class="hint" id="prompt"></p><div class="row" id="bank"></div></div></div></section>
 <section><h2>4. My Pokémon description</h2><div class="row"><button id="descriptionRomaji" aria-pressed="true" aria-controls="paragraph">Romaji</button><button id="descriptionEnglish" aria-pressed="false" aria-controls="paragraph">English translation</button></div><div id="paragraph"></div><p class="hint" id="empty">Build a sentence and tap “Add to description” to collect your sentences here.</p><p class="hint" id="editHint" hidden>Use the arrows to reorder sentences or Delete to remove one.</p></section>
 </main>
 <dialog id="confirmChange" aria-labelledby="confirmMessage">
@@ -110,6 +135,7 @@ function render(focus){
  for(const id of ['patterns','sentence','bank','paragraph']) $(id).replaceChildren();
  patterns.forEach((_,i)=>button($('patterns'),jp(patternTiles[i],true),()=>{if(i===mode)return;const change=()=>{draftEdited=false;mode=i;active=patterns[i][2].findIndex(w=>words[w[0]]);picks={};show=false;render(['patterns',i])};if(draftEdited)confirmChange('Change patterns and discard the sentence you’re building?','Change pattern',change);else change()},'',i===mode));
  $('tip').textContent=tip;
+  $('joiningGuide').hidden=mode!==2;
  const slots=parts.map((w,i)=>words[w[0]]?i:-1).filter(i=>i>=0);
  parts.forEach((w,i)=>{
    if(words[w[0]]) button($('sentence'),picks[i]?jp(picks[i]):w[1],()=>{active=i;render(['bank',0])},'slot '+tileType(w[0],picks[i]),i===active).setAttribute('aria-label',w[1]+(picks[i]?' '+picks[i][0]:''));
